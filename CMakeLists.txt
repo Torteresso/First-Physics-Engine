@@ -12,5 +12,20 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
-add_executable(main src/main.cpp "src/events.h" "src/events.cpp" "src/configuration.h" "src/random.h" "src/utility.h")
-target_link_libraries(main PRIVATE SFML::Graphics)
+file(GLOB_RECURSE source_files
+    "src/*.cpp"
+)
+
+
+set(SOURCES ${source_files})
+
+add_executable(${PROJECT_NAME} ${SOURCES})
+target_include_directories(${PROJECT_NAME} PRIVATE "src")
+target_link_libraries(${PROJECT_NAME} PRIVATE sfml-graphics)
+
+# Copy res dir to the binary directory
+add_custom_command(
+    TARGET ${PROJECT_NAME}
+    COMMENT "Copy Res directory"
+    PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/res $<TARGET_FILE_DIR:${PROJECT_NAME}>/res
+    VERBATIM)

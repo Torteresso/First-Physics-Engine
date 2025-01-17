@@ -1,6 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
-#include "events.h"
+#include "common/events.h"
 #include "configuration.h"
 
 int main()
@@ -12,8 +12,36 @@ int main()
 
     sf::View mainView = window.getDefaultView();
 
-	sf::CircleShape circle{ 10 };
-	circle.setFillColor(sf::Color::Green);
+    sf::Texture texture;
+    
+    if (!texture.loadFromFile("res/cell.png"))
+    {
+        std::cout << "error";
+    }
+
+    sf::VertexArray square(sf::PrimitiveType::Triangles, 6);
+
+   
+    square[0].position = sf::Vector2f(100.0f, 100.0f);
+    square[1].position = sf::Vector2f(350.0f, 100.0f);
+    square[2].position = sf::Vector2f(350.0f, 350.0f);
+    square[3].position = sf::Vector2f(100.0f, 100.0f);
+    square[4].position = sf::Vector2f(100.0f, 350.0f);
+    square[5].position = sf::Vector2f(350.0f, 350.0f);
+
+    square[0].color = sf::Color::Green;
+    square[1].color = sf::Color::Green;
+    square[2].color = sf::Color::Green;
+    square[3].color = sf::Color::Green;
+    square[4].color = sf::Color::Green;
+    square[5].color = sf::Color::Green;   
+
+    square[0].texCoords = sf::Vector2f(0.f, 0.f);
+    square[1].texCoords = sf::Vector2f(32.f, 0.f);
+    square[2].texCoords = sf::Vector2f(32.f, 32.f);
+    square[3].texCoords = sf::Vector2f(0.f, 0.f);
+    square[4].texCoords = sf::Vector2f(0.f, 32.f);
+    square[5].texCoords = sf::Vector2f(32.f, 32.f);
 
     while (window.isOpen())
     {
@@ -23,7 +51,7 @@ int main()
         window.clear();
         
         window.setView(mainView);
-        window.draw(circle);
+        window.draw(square, &texture);
 
         window.display();
     }
