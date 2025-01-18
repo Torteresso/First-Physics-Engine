@@ -1,10 +1,12 @@
 #include "common/events.h"
+#include "common/random.h"
+
 #include <iostream>
 #include <cmath>
 
 bool g_mouseLeftDown{ false };
 
-void Event::processEvents(sf::RenderWindow& window, sf::View& view)
+void Event::processEvents(sf::RenderWindow& window, sf::View& view, Solver& solver)
 {
 	while (const std::optional event = window.pollEvent())
 	{
@@ -33,6 +35,11 @@ void Event::processEvents(sf::RenderWindow& window, sf::View& view)
 			if (mouseButtonReleased->button == sf::Mouse::Button::Left)
 			{
 				g_mouseLeftDown = false;
+				solver.addObject(Random::get(20, 300),
+								 static_cast<sf::Vector2f>(mouseButtonReleased->position),
+								 { static_cast<uint8_t>(Random::get(0, 255)),
+								   static_cast<uint8_t>(Random::get(0, 255)),
+								   static_cast<uint8_t>(Random::get(0, 255)) });
 			}
 		}
 		else if (const auto* mouseMoved = event->getIf<sf::Event::MouseMoved>())

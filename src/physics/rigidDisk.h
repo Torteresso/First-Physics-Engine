@@ -6,18 +6,24 @@
 class RigidDisk
 {
 public:
-	RigidDisk(float radius, sf::Color c, sf::Vector2f pos) : m_pos{ pos }, m_oldPos{ pos }
+	RigidDisk() = delete;
+
+	RigidDisk(float radius, sf::Vector2f pos, sf::Color c) : m_pos{ pos }, m_oldPos{ pos }, m_color{ c }, m_radius{radius}
 	{
-		m_body.setFillColor(c);
-		m_body.setPosition(pos);
-		m_body.setRadius(radius);
 	}
 
+	const sf::Vector2f& getPos() const{ return m_pos; }
+	const sf::Color& getColor() const { return m_color; }
+	const float getRadius() const { return m_radius; }
+
 private:
-	sf::CircleShape m_body;
 
 	sf::Vector2f m_pos;
 	sf::Vector2f m_oldPos;
+	
+	sf::Color m_color;
+
+	float m_radius;
 };
 
 #endif
