@@ -9,6 +9,7 @@ namespace Config
 	sf::Vector2f const windowSizef{ static_cast<sf::Vector2f>(windowSize) };
 	int const maxFrameRate{ 60 };
 
+	constexpr sf::Vector2f gravity{ 0.f, 1000.f };
 }
 
 #endif

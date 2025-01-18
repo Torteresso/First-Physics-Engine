@@ -17,9 +17,9 @@ void Renderer::updateVertices()
 	for (int i{}; i < objects.size(); i++)
 	{
 		const auto& obj{ objects[i] };
-		const auto& pos{ obj.getPos() };
-		const auto& color{ obj.getColor() };
-		const float radius{ obj.getRadius() };
+		const auto& pos{ obj.pos };
+		const auto& color{ obj.color };
+		const float radius{ obj.radius };
 
 		m_vertices[6 * i + 0].position = pos + sf::Vector2(-radius, -radius);
 		m_vertices[6 * i + 1].position = pos + sf::Vector2(radius, -radius);
