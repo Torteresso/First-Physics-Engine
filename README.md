@@ -5,7 +5,7 @@ My first try to make small physics engine in c++ using SMFL.
 
 Current state : 
 
-- drawing about 18 000 circles at 60 FPS with collisions and verlet physics (optimized with a grid)
+- drawing about 18 000 circles at 60 FPS with collisions and verlet physics (optimized with a grid, no multithreading)
 
 HOW TO USE IT
 =============
