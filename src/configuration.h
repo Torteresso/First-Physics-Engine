@@ -5,11 +5,14 @@
 
 namespace Config
 {
-	sf::Vector2u const windowSize {1920, 1200};
-	sf::Vector2f const windowSizef{ static_cast<sf::Vector2f>(windowSize) };
-	int const maxFrameRate{ 60 };
+	sf::Vector2u constexpr windowSize {1920, 1200};
+	sf::Vector2f constexpr windowSizef{ static_cast<sf::Vector2f>(windowSize) };
+	int constexpr maxFrameRate{ 60 };
 
 	constexpr sf::Vector2f gravity{ 0.f, 1000.f };
+	constexpr float diskRadius{ 5 };
+
+	constexpr bool showFps{ true };
 }
 
 #endif

@@ -25,12 +25,17 @@ void Event::processEvents(sf::RenderWindow& window, sf::View& view, Solver& solv
 
 			if (keyPressed->scancode == sf::Keyboard::Scancode::Space)
 			{
-				solver.addObject(Random::get(5, 20),
-								 {100, 100},
-								 {75, 75},
-								 { static_cast<uint8_t>(Random::get(0, 255)),
-								   static_cast<uint8_t>(Random::get(0, 255)),
-								   static_cast<uint8_t>(Random::get(0, 255)) });
+				const int nbToadd{ 3 };
+				for (int i{}; i < nbToadd; i++)
+				{
+					solver.addObject(Config::diskRadius,
+						{ 100 + 3 * i * Config::diskRadius, 100 + 3 * i * Config::diskRadius },
+						{ 97 + 3 * i * Config::diskRadius, 100 + 3 * i * Config::diskRadius },
+						{ static_cast<uint8_t>(Random::get(0, 255)),
+						  static_cast<uint8_t>(Random::get(0, 255)),
+						  static_cast<uint8_t>(Random::get(0, 255)) });
+				}
+
 			}
 		}
 		else if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>())
@@ -45,7 +50,7 @@ void Event::processEvents(sf::RenderWindow& window, sf::View& view, Solver& solv
 			if (mouseButtonReleased->button == sf::Mouse::Button::Left)
 			{
 				g_mouseLeftDown = false;
-				solver.addObject(Random::get(5, 20),
+				solver.addObject(Config::diskRadius,
 								 window.mapPixelToCoords(mouseButtonReleased->position),
 								 window.mapPixelToCoords(mouseButtonReleased->position),
 								 { static_cast<uint8_t>(Random::get(0, 255)),
