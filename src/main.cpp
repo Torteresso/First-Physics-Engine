@@ -9,6 +9,7 @@
 #include "physics/solver.h"
 #include "physics/grid.h"
 #include "common/utility.h"
+#include "common/random.h"
 
 int main()
 {
@@ -29,12 +30,18 @@ int main()
     std::vector<float> fpsVector{};
     if (Config::showFps) fpsVector.reserve(1000);
 
+    bool spawnObjects{ true };
+
+    sf::Time colorTime;
+
+
     while (window.isOpen())
     {
-        Event::processEvents(window, mainView, solver);
+        Event::processEvents(window, mainView, solver, spawnObjects);
         //Event::moveView(window, mainView);
 
         sf::Time elapsed = clock.restart();
+        colorTime += elapsed;
 
         if (Config::showFps)
         {
@@ -48,6 +55,19 @@ int main()
                 fpsVector.clear();
             }
 
+        }
+
+        if (spawnObjects)
+        {
+            if (solver.getObjects().size() >= solver.getMaxObjects() - Config::spawnRate) spawnObjects = false;
+
+            for (int i{}; i < Config::spawnRate; i++)
+            {
+                solver.addObject(Config::diskRadius,
+                    { 100 + 3 * i * Config::diskRadius, 100 + 3 * i * Config::diskRadius },
+                    { 97 + 3 * i * Config::diskRadius, 100 + 3 * i * Config::diskRadius },
+                    Utility::getGradient(colorTime.asSeconds(), Config::diskColor.first, Config::diskColor.second));
+            }
         }
 
         solver.update(dt);

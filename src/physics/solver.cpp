@@ -78,16 +78,15 @@ void Solver::solveCollision()
 		for (int j{}; j < currentCell.objCount; j++)
 		{
 			const int i{ currentCell.objects[j] };
+			if (m_grid.idexIsValid(k + m_grid.getNbCol())) solveObjCellCollision(i, m_grid[k + m_grid.getNbCol()]);
+			if (m_grid.idexIsValid(k + m_grid.getNbCol() - 1)) solveObjCellCollision(i, m_grid[k + m_grid.getNbCol() - 1]);
+			if (m_grid.idexIsValid(k + m_grid.getNbCol() + 1)) solveObjCellCollision(i, m_grid[k + m_grid.getNbCol() + 1]);
 			if (m_grid.idexIsValid(k)) solveObjCellCollision(i, m_grid[k]);
 			if (m_grid.idexIsValid(k - 1)) solveObjCellCollision(i, m_grid[k - 1]);
 			if (m_grid.idexIsValid(k + 1)) solveObjCellCollision(i, m_grid[k + 1]);
-			if (m_grid.idexIsValid(k + m_grid.getNbCol() - 1)) solveObjCellCollision(i, m_grid[k + m_grid.getNbCol() - 1]);
-			if (m_grid.idexIsValid(k + m_grid.getNbCol())) solveObjCellCollision(i, m_grid[k + m_grid.getNbCol()]);
-			if (m_grid.idexIsValid(k + m_grid.getNbCol() + 1)) solveObjCellCollision(i, m_grid[k + m_grid.getNbCol() + 1]);
-			if (m_grid.idexIsValid(k - m_grid.getNbCol() - 1)) solveObjCellCollision(i, m_grid[k - m_grid.getNbCol() - 1]);
 			if (m_grid.idexIsValid(k - m_grid.getNbCol())) solveObjCellCollision(i, m_grid[k - m_grid.getNbCol()]);
+			if (m_grid.idexIsValid(k - m_grid.getNbCol() - 1)) solveObjCellCollision(i, m_grid[k - m_grid.getNbCol() - 1]);
 			if (m_grid.idexIsValid(k - m_grid.getNbCol() + 1)) solveObjCellCollision(i, m_grid[k - m_grid.getNbCol() + 1]);
-
 		}
 	}
 }

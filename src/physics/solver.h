@@ -16,6 +16,13 @@ public:
 
 	void update(const float dt);
 
+	void addObject(float radius, const sf::Vector2f& pos, const sf::Vector2f& olfPos, const sf::Color& color);
+
+	const std::vector<RigidDisk>& getObjects() const { return m_objects; }
+	
+	const int getMaxObjects() const { return (Config::windowSizef.x * Config::windowSizef.y * 0.9f)/(3.14f*Config::diskRadius * Config::diskRadius); }
+
+private:
 	void updatePos(const float dt);
 	void applyConstraints(RigidDisk& obj);
 	
@@ -26,10 +33,6 @@ public:
 
 	void updateGrid();
 
-	const std::vector<RigidDisk>& getObjects() const { return m_objects; }
-
-	void addObject(float radius, const sf::Vector2f& pos, const sf::Vector2f& olfPos, const sf::Color& color);
-private:
 	std::vector<RigidDisk> m_objects;
 
 	Grid m_grid{};

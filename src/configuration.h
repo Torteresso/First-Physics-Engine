@@ -2,17 +2,22 @@
 #define CONFIGURATION_H
 
 #include <SFML/System/Vector2.hpp>
+#include <utility>
+#include "common/utility.h"
 
 namespace Config
 {
-	sf::Vector2u constexpr windowSize {1920, 1200};
-	sf::Vector2f constexpr windowSizef{ static_cast<sf::Vector2f>(windowSize) };
-	int constexpr maxFrameRate{ 60 };
+	constexpr sf::Vector2u						windowSize		{1920, 1200};
+	constexpr sf::Vector2f						windowSizef		{ static_cast<sf::Vector2f>(windowSize) };
+	constexpr int								maxFrameRate	{ 60 };
 
-	constexpr sf::Vector2f gravity{ 0.f, 1000.f };
-	constexpr float diskRadius{ 5 };
+	constexpr sf::Vector2f						gravity			{ 0.f, 1000.f };
+	constexpr float								diskRadius		{ 10 };
+	constexpr int								spawnRate		{ 3 };
+	constexpr std::pair<sf::Color, sf::Color>	diskColor		{ Utility::honey }; //available : honey, orange
 
-	constexpr bool showFps{ true };
+	constexpr bool								showFps			{ false };
+
 }
 
 #endif

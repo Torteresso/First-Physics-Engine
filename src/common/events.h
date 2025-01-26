@@ -6,7 +6,7 @@
 
 namespace Event
 {
-	void processEvents(sf::RenderWindow& window, sf::View& view, Solver& solver);
+	void processEvents(sf::RenderWindow& window, sf::View& view, Solver& solver, bool& spawnObjects);
 
 	void moveView(sf::RenderWindow& window, sf::View& view);
 }

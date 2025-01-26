@@ -6,7 +6,7 @@
 
 bool g_mouseLeftDown{ false };
 
-void Event::processEvents(sf::RenderWindow& window, sf::View& view, Solver& solver)
+void Event::processEvents(sf::RenderWindow& window, sf::View& view, Solver& solver, bool& spawnObjects)
 {
 	while (const std::optional event = window.pollEvent())
 	{
@@ -25,17 +25,14 @@ void Event::processEvents(sf::RenderWindow& window, sf::View& view, Solver& solv
 
 			if (keyPressed->scancode == sf::Keyboard::Scancode::Space)
 			{
-				const int nbToadd{ 3 };
-				for (int i{}; i < nbToadd; i++)
-				{
-					solver.addObject(Config::diskRadius,
-						{ 100 + 3 * i * Config::diskRadius, 100 + 3 * i * Config::diskRadius },
-						{ 97 + 3 * i * Config::diskRadius, 100 + 3 * i * Config::diskRadius },
-						{ static_cast<uint8_t>(Random::get(0, 255)),
-						  static_cast<uint8_t>(Random::get(0, 255)),
-						  static_cast<uint8_t>(Random::get(0, 255)) });
-				}
-
+				
+			}
+		}
+		else if (const auto& keyReleased = event->getIf<sf::Event::KeyReleased>())
+		{
+			if (keyReleased->scancode == sf::Keyboard::Scancode::Space)
+			{
+				spawnObjects = !spawnObjects;
 			}
 		}
 		else if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>())

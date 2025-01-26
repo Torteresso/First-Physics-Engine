@@ -38,7 +38,7 @@ class Grid
 	using DiskGrid = std::vector<Cell>;
 
 	static constexpr float m_cellSize{ 2 * Config::diskRadius };
-	static constexpr int m_padding{ 2 };
+	static constexpr int m_padding{ 1 };
 	static constexpr int m_nbRow{static_cast<int>(Config::windowSize.y / (2*Config::diskRadius)) + 2 * m_padding};
 	static constexpr int m_nbCol{static_cast<int>(Config::windowSize.x / (2*Config::diskRadius)) + 2 * m_padding};
 
