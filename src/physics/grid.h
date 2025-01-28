@@ -69,6 +69,11 @@ public:
 		return m_disks.size();
 	}
 
+	const int sizeWithoutPadding() const
+	{
+		return (m_nbCol - 2 * m_padding) * (m_nbRow - 2 * m_padding);
+	}
+
 	Cell& operator[] (int index)
 	{
 		return m_disks[index];

@@ -22,6 +22,8 @@ public:
 	
 	const int getMaxObjects() const { return (Config::windowSizef.x * Config::windowSizef.y * 0.9f)/(3.14f*Config::diskRadius * Config::diskRadius); }
 
+	void record() const;
+
 private:
 	void updatePos(const float dt);
 	void applyConstraints(RigidDisk& obj);

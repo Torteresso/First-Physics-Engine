@@ -10,6 +10,7 @@
 #include "physics/grid.h"
 #include "common/utility.h"
 #include "common/random.h"
+#include "common/imageToGrid.h"
 
 int main()
 {

@@ -164,3 +164,8 @@ void Solver::addObject(float radius, const sf::Vector2f& pos, const sf::Vector2f
 
 	if (m_objects.size() % 1000 == 0) std::cout << "Number of objects : " << m_objects.size() << "\n";
 }
+
+void Solver::record() const
+{
+
+}

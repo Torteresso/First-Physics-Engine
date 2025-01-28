@@ -9,8 +9,6 @@
 
 namespace Utility
 {
-	constexpr std::pair<sf::Color, sf::Color> honey		{ { 255, 192, 0 }, {139, 64, 0} };
-	constexpr std::pair<sf::Color, sf::Color> orange	{ {255, 172, 28}, {204, 85, 0 } };
 	inline float average(std::vector<float> const& v){
 
 		if(v.empty()){
