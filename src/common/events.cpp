@@ -34,6 +34,10 @@ void Event::processEvents(sf::RenderWindow& window, sf::View& view, Solver& solv
 			{
 				spawnObjects = !spawnObjects;
 			}
+			if (keyReleased->scancode == sf::Keyboard::Scancode::S)
+			{
+				solver.record();
+			}
 		}
 		else if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>())
 		{

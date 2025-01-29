@@ -1,6 +1,35 @@
 #include "physics/solver.h"
+#include "common/imageToGrid.h"
 #include <iostream>
 #include <cmath>
+
+Solver::Solver()
+{
+	std::stringstream os{};
+	os << "config" << Config::diskRadius << "_" << Config::spawnRate << ".txt";
+
+	std::string filename{};
+	os >> filename;
+
+	std::ifstream IFile{ filename };
+
+	if (!IFile.good()) return;
+
+	std::string cellIdString{};
+	while (std::getline(IFile, cellIdString))
+	{
+		os.str("");
+		os.clear();
+
+		os << cellIdString;
+		int cellId{};
+		os >> cellId;
+
+		m_finalPos.push_back(cellId);
+	}
+
+	m_colors = ImageToGrid::transform(Config::imageFilename, m_grid);
+}
 
 
 void Solver::update(const float dt)
@@ -24,69 +53,24 @@ void Solver::updateGrid()
 	}
 }
 
-void Solver::solveCollisionNaive()
-{
-	/*for (int i{}; i < m_objects.size(); i++)
-	{
-		for (int j{}; j < m_objects.size(); j++)
-		{
-			if (i == j) continue;
-
-			solveObjCollision(i, j);
-		}
-	}*/
-
-	for (int i{}; i < m_grid.size(); i++)
-	{
-		for (int j{}; j < m_grid.size(); j++)
-		{
-			//solveCellCollision(m_grid[i], m_grid[j]);
-		}
-	}
-}
-
 void Solver::solveCollision()
 {
-	const int nbRow{ m_grid.getNbRow()};
 	const int nbCol{ m_grid.getNbCol()};
-	/*for (int x{1}; x < nbCol - 1; x++)
-	{
-		for (int y{ 1 }; y < nbRow - 1; y++)
-		{
-			const auto& currentCell{ m_grid[Grid::coordToIndex(x, y)] };
-
-			for (int i{}; i < currentCell.objCount; i++)
-			{
-				const int cellId{ currentCell.objects[i] };
-
-				for (int dx{ -1 }; dx <= 1; dx++)
-				{
-					for (int dy{ -1 }; dy <= 1; dy++)
-					{
-						const auto& otherCell{ m_grid[Grid::coordToIndex(x + dx, y + dy)] };
-
-						if (otherCell.objCount > 0) solveObjCellCollision(cellId, otherCell);
-					}
-				}
-			}
-		}
-	}*/
-
 	for (int k{}; k < m_grid.size(); k++)
 	{
 		const auto& currentCell{ m_grid[k] };
 		for (int j{}; j < currentCell.objCount; j++)
 		{
 			const int i{ currentCell.objects[j] };
-			if (m_grid.idexIsValid(k + m_grid.getNbCol())) solveObjCellCollision(i, m_grid[k + m_grid.getNbCol()]);
-			if (m_grid.idexIsValid(k + m_grid.getNbCol() - 1)) solveObjCellCollision(i, m_grid[k + m_grid.getNbCol() - 1]);
-			if (m_grid.idexIsValid(k + m_grid.getNbCol() + 1)) solveObjCellCollision(i, m_grid[k + m_grid.getNbCol() + 1]);
+			if (m_grid.idexIsValid(k + nbCol)) solveObjCellCollision(i, m_grid[k + nbCol]);
+			if (m_grid.idexIsValid(k + nbCol - 1)) solveObjCellCollision(i, m_grid[k + nbCol - 1]);
+			if (m_grid.idexIsValid(k + nbCol + 1)) solveObjCellCollision(i, m_grid[k + nbCol + 1]);
 			if (m_grid.idexIsValid(k)) solveObjCellCollision(i, m_grid[k]);
 			if (m_grid.idexIsValid(k - 1)) solveObjCellCollision(i, m_grid[k - 1]);
 			if (m_grid.idexIsValid(k + 1)) solveObjCellCollision(i, m_grid[k + 1]);
-			if (m_grid.idexIsValid(k - m_grid.getNbCol())) solveObjCellCollision(i, m_grid[k - m_grid.getNbCol()]);
-			if (m_grid.idexIsValid(k - m_grid.getNbCol() - 1)) solveObjCellCollision(i, m_grid[k - m_grid.getNbCol() - 1]);
-			if (m_grid.idexIsValid(k - m_grid.getNbCol() + 1)) solveObjCellCollision(i, m_grid[k - m_grid.getNbCol() + 1]);
+			if (m_grid.idexIsValid(k - nbCol)) solveObjCellCollision(i, m_grid[k - nbCol]);
+			if (m_grid.idexIsValid(k - nbCol - 1)) solveObjCellCollision(i, m_grid[k - nbCol - 1]);
+			if (m_grid.idexIsValid(k - nbCol + 1)) solveObjCellCollision(i, m_grid[k - nbCol + 1]);
 		}
 	}
 }
@@ -160,12 +144,36 @@ void Solver::applyConstraints(RigidDisk& obj)
 
 void Solver::addObject(float radius, const sf::Vector2f& pos, const sf::Vector2f& oldPos, const sf::Color& color)
 {
-	m_objects.push_back({ radius, pos, oldPos, color });
+	const int objId{ static_cast<int>(m_objects.size()) };
 
-	if (m_objects.size() % 1000 == 0) std::cout << "Number of objects : " << m_objects.size() << "\n";
+	if (m_finalPos.size() > 0 && objId < m_finalPos.size())
+	{
+		m_objects.push_back({ radius, pos, oldPos, m_colors[m_finalPos[objId]] });
+	}
+	else
+	{
+		m_objects.push_back({ radius, pos, oldPos, color });
+	}
+
+	if (objId % 1000 == 0) std::cout << "Number of objects : " << m_objects.size() << "\n";
 }
 
 void Solver::record() const
 {
+	std::stringstream os{};
+	os << "config" << Config::diskRadius << "_" << Config::spawnRate << ".txt";
 
+	std::string filename{};
+	os >> filename;
+
+	std::ifstream IFile{ filename };
+
+	if (IFile.good()) return;
+
+	std::ofstream OFile{ filename };
+
+	for (int i{}; i < m_objects.size(); i++)
+	{
+		OFile << m_grid.posToIndex(m_objects[i].pos) << "\n";
+	}
 }

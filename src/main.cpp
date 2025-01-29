@@ -10,7 +10,6 @@
 #include "physics/grid.h"
 #include "common/utility.h"
 #include "common/random.h"
-#include "common/imageToGrid.h"
 
 int main()
 {
@@ -34,7 +33,6 @@ int main()
     bool spawnObjects{ true };
 
     sf::Time colorTime;
-
 
     while (window.isOpen())
     {

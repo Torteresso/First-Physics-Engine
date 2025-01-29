@@ -46,7 +46,6 @@ public:
 	Grid()
 	{
 		m_disks.resize(m_nbCol * m_nbRow);
-		std::cout << (m_nbCol - 1) * m_nbRow << "\n";
 
 		for (int i{}; i < m_nbCol * m_nbRow; i++)
 		{
@@ -94,12 +93,12 @@ public:
 		return (i >= 0 && i < m_disks.size());
 	}
 
-private:
-
 	static const int posToIndex(const sf::Vector2f& pos)
 	{
 		return (static_cast<int>(pos.y / m_cellSize) + m_padding) * m_nbCol + static_cast<int>(pos.x / m_cellSize) + m_padding;
 	}
+
+private:
 
 	DiskGrid m_disks;
 };

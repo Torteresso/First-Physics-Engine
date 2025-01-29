@@ -4,6 +4,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <utility>
 #include "common/utility.h"
+#include <string_view>
 
 namespace Config
 {
@@ -16,10 +17,10 @@ namespace Config
 
 
 	constexpr sf::Vector2f						gravity			{ 0.f, 1000.f };
-	constexpr float								diskRadius		{ 10 };
-	constexpr int								spawnRate		{ 3 };
+	constexpr float								diskRadius		{ 4 };
+	constexpr int								spawnRate		{ 20 };
 	constexpr std::pair<sf::Color, sf::Color>	diskColor		{ honey }; //available : honey, orange
-
+	constexpr std::string_view					imageFilename	{ "res/arbre.jpg" };
 
 
 	constexpr bool								showFps			{ false };
