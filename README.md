@@ -1,7 +1,7 @@
 PRESENTATION
 ============
 
-My first try to make small physics engine in c++ using SMFL.
+My first try to make small physics engine in C++ using SMFL.
 
 Current state : 
 
