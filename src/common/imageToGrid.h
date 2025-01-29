@@ -31,10 +31,6 @@ namespace ImageToGrid
 
 				const sf::Color pixelColor{ image.getPixel(imageCoord) };
 				colorGrid.push_back(pixelColor);
-
-				//std::cout << imageCoord.x << ", " << imageCoord.y 
-					//<< ", (" << static_cast<int>(pixelColor.r) << ", " << static_cast<int>(pixelColor.g)
-					//<< ", " << static_cast<int>(pixelColor.b) << ")\n";
 			}
 		}
 
