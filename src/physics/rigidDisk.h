@@ -17,6 +17,8 @@ struct RigidDisk
 
 	bool fixed{ false };
 	bool isVirtual{ false };
+
+	int diskObjId {-1};
 };
 
 class Link
@@ -50,7 +52,11 @@ public:
 		const float disk2Displacement{ 1.f - disk1Displacement };
 
 		m_disk1.pos += disk1Displacement * delta * n.normalized();
+		m_disk1.oldPos += disk1Displacement * delta * n.normalized();
+
 		m_disk2.pos -= disk2Displacement * delta * n.normalized();
+		m_disk2.oldPos -= disk2Displacement * delta * n.normalized();
+
 
 	}
 
@@ -67,10 +73,10 @@ public:
 	{
 		if (m_components.size() <= 1) return;
 
-		const float dist{ (m_components[0]->pos - m_components[1]->pos).length() };
-		m_links.push_back({ *m_components[0], *m_components[1], 2 * Config::diskRadius });
+		//const float dist{ (m_components[0]->pos - m_components[1]->pos).length() };
+		//m_links.push_back({ *m_components[0], *m_components[1], dist });
 		
-		if (m_components.size() == 2) return;
+		/*if (m_components.size() == 2) return;
 
 		for (int i{2}; i < m_components.size(); i++)
 		{
@@ -79,9 +85,33 @@ public:
 			auto& disk3{ *m_components[i] };
 			const float dist23{ (disk3.pos - disk2.pos).length() };
 			const float dist13{ (disk3.pos - disk1.pos).length() };
-
+			
 			m_links.push_back({ disk1, disk3, dist13 });
 			m_links.push_back({ disk2, disk3, dist23 });
+		}
+
+		if (m_components.size() == 3) return;
+
+		for (int i{2}; i < m_components.size(); i++)
+		{
+			auto& disk0{ *m_components[0] };
+			auto& disk{ *m_components[i] };
+			const float dist0{ (disk.pos - disk0.pos).length() };
+			
+			m_links.push_back({ disk0, disk, dist0 });
+		}*/
+		
+		for (int i{1}; i < m_components.size(); i++)
+		{
+			auto& disk1{ *m_components[i] };
+			for (int j{ i - 1 }; j >= 0; j--)
+			{
+				auto& disk2{ *m_components[j] };
+				const float dist{ (disk1.pos - disk2.pos).length() };
+				
+				m_links.push_back({ disk1, disk2, dist });
+
+			}
 		}
 		
 	}

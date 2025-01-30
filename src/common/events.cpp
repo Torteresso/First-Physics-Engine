@@ -38,19 +38,21 @@ void Event::processEvents(sf::RenderWindow& window, sf::View& view, Solver& solv
 			{
 				solver.record();
 			}
+			if (keyReleased->scancode == sf::Keyboard::Scancode::C)
+			{
+				solver.clear();
+			}
+
 		}
 		else if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>())
 		{
 			if (mouseButtonPressed->button == sf::Mouse::Button::Left)
 			{
 				if (!g_mouseLeftDown) 
-					solver.addDisk(Config::diskRadius,
+					solver.addDiskForObject(Config::diskRadius,
 					window.mapPixelToCoords(mouseButtonPressed->position),
 					window.mapPixelToCoords(mouseButtonPressed->position),
-					{ static_cast<uint8_t>(Random::get(0, 255)),
-					  static_cast<uint8_t>(Random::get(0, 255)),
-					  static_cast<uint8_t>(Random::get(0, 255)) },
-					true);
+					sf::Color::White);
 				g_mouseLeftDown = true;
 
 			}
@@ -61,17 +63,19 @@ void Event::processEvents(sf::RenderWindow& window, sf::View& view, Solver& solv
 			{
 				g_mouseLeftDown = false;
 			}
+			if (mouseButtonReleased->button == sf::Mouse::Button::Right)
+			{
+				solver.addObject();
+			}
+
 		}
 		else if (const auto* mouseMoved = event->getIf<sf::Event::MouseMoved>())
 		{
 			if (g_mouseLeftDown)
-				solver.addDisk(Config::diskRadius,
+				solver.addDiskForObject(Config::diskRadius,
 					window.mapPixelToCoords(mouseMoved->position),
 					window.mapPixelToCoords(mouseMoved->position),
-					{ static_cast<uint8_t>(Random::get(0, 255)),
-					  static_cast<uint8_t>(Random::get(0, 255)),
-					  static_cast<uint8_t>(Random::get(0, 255)) },
-					true);
+					sf::Color::White);
 
 		}
 		else if (const auto* mouseWheelScrolled = event->getIf<sf::Event::MouseWheelScrolled>())

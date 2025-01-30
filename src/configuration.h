@@ -17,9 +17,9 @@ namespace Config
 
 
 	constexpr sf::Vector2f						gravity			{ 0.f, 1000.f };
-	constexpr float								diskRadius		{ 5 };
-	constexpr int								spawnRate		{ 4 };
-	constexpr bool								autoSpawnStart  { true };
+	constexpr float								diskRadius		{ 15 };
+	constexpr int								spawnRate		{ 2 };
+	constexpr bool								autoSpawnStart  { false };
 	constexpr std::pair<sf::Color, sf::Color>	diskColor		{ honey }; //available : honey, orange
 	constexpr std::string_view					imageFilename	{ "res/arbre.jpg" };
 

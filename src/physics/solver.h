@@ -20,12 +20,17 @@ public:
 
 	void update(const float dt);
 
-	void addDisk(float radius, const sf::Vector2f& pos, const sf::Vector2f& olfPos, const sf::Color& color, const bool fixed=false);
+	void addDisk(float radius, const sf::Vector2f& pos, const sf::Vector2f& oldPos, 
+					const sf::Color& color, const bool fixed=false, const bool isVirtual=false);
+	void addDiskForObject(float radius, const sf::Vector2f& pos, const sf::Vector2f& oldPos, const sf::Color& color);
+	void addObject();
 
 	const std::vector<RigidDisk>& getDisks() const { return m_disks; }
 	const Grid& getGrid() const { return m_grid; }
 	
 	const int getMaxDisks() const { return (Config::windowSizef.x * Config::windowSizef.y * 0.9f)/(3.14f*Config::diskRadius * Config::diskRadius); }
+
+	void clear();
 
 	void record() const;
 
@@ -42,7 +47,8 @@ private:
 
 	std::vector<RigidDisk> m_disks;
 
-	std::vector<Link> m_links;
+	std::set<int> m_objDiskIds;
+	std::vector<DiskObject> m_diskObjects;
 
 	std::vector<int> m_finalPos;
 	std::vector<sf::Color> m_colors;

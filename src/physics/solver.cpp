@@ -50,9 +50,9 @@ void Solver::update(const float dt)
 
 void Solver::solveLinks()
 {
-	for (int i{}; i < m_links.size(); i++)
+	for (auto& diskObj : m_diskObjects)
 	{
-		m_links[i].apply();
+		diskObj.applyLinks();
 	}
 }
 
@@ -90,6 +90,9 @@ void Solver::solveDiskCollision(const int id1, const int id2)
 {
 	auto& disk1{ m_disks[id1] };
 	auto& disk2{ m_disks[id2] };
+
+	if (disk1.isVirtual || disk2.isVirtual) return;
+	if (disk1.diskObjId >= 0 && disk1.diskObjId == disk2.diskObjId) return;
 
 	sf::Vector2f n{ disk2.pos - disk1.pos };
 
@@ -168,9 +171,11 @@ void Solver::applyConstraints(RigidDisk& disk)
 }
 
 
-void Solver::addDisk(float radius, const sf::Vector2f& pos, const sf::Vector2f& oldPos, const sf::Color& color, const bool fixed)
+void Solver::addDisk(float radius, const sf::Vector2f& pos, const sf::Vector2f& oldPos, 
+					 const sf::Color& color, const bool fixed, const bool isVirtual)
 {
 	sf::Vector2f newPos{ pos };
+	sf::Vector2f newOldPos{ oldPos };
 
 	if (fixed)
 	{
@@ -180,20 +185,75 @@ void Solver::addDisk(float radius, const sf::Vector2f& pos, const sf::Vector2f& 
 		m_occupied.insert(cellId);
 
 		newPos = m_grid.getCellMiddlePos(cellId);
+		newOldPos = newPos;
 	}
 
 	const int diskId{ static_cast<int>(m_disks.size()) };
 
 	if (m_finalPos.size() > 0 && diskId < m_finalPos.size())
 	{
-		m_disks.push_back({ radius, newPos, oldPos, m_colors[m_finalPos[diskId]], fixed });
+		if (fixed)
+		{
+			m_disks.push_back({ radius, newPos, newOldPos, color, fixed, isVirtual });
+		}
+		else
+		{
+			m_disks.push_back({ radius, newPos, newOldPos, m_colors[m_finalPos[diskId]], fixed, isVirtual });
+		}
 	}
 	else
 	{
-		m_disks.push_back({ radius, newPos, oldPos, color, fixed });
+		m_disks.push_back({ radius, newPos,newOldPos, color, fixed, isVirtual });
 	}
 
 	if (diskId % 1000 == 0) std::cout << "Number of disks : " << m_disks.size() << "\n";
+}
+
+void Solver::addDiskForObject(float radius, const sf::Vector2f& pos, const sf::Vector2f& oldPos, const sf::Color& color)
+{
+	const int diskId{ static_cast<int>(m_disks.size()) };
+
+	addDisk(radius, pos, oldPos, color, true, true);
+
+	if (m_disks.size() == diskId) return;  //No new DISK has been added
+
+	m_objDiskIds.insert(diskId);
+}
+
+void Solver::addObject()
+{
+	std::vector<RigidDisk*> components;
+	components.reserve(m_objDiskIds.size());
+
+	int objId{ static_cast<int>(m_diskObjects.size()) };
+
+	for (const auto& id : m_objDiskIds)
+	{
+		auto& disk{ m_disks[id] };
+
+		components.push_back(&disk);
+
+		const int cellId{ m_grid.posToIndex(disk.pos)};
+		m_occupied.erase(cellId);
+
+		disk.isVirtual = false;
+		disk.fixed = false;
+		disk.diskObjId = objId;
+	}
+
+	m_diskObjects.push_back(DiskObject(components));
+
+	m_objDiskIds.clear();
+
+}
+
+void Solver::clear()
+{
+	m_grid.clear();
+	m_disks.clear();
+	m_objDiskIds.clear();
+	m_diskObjects.clear();
+	m_occupied.clear();
 }
 
 void Solver::record() const
@@ -215,3 +275,4 @@ void Solver::record() const
 		OFile << m_grid.posToIndex(m_disks[i].pos) << "\n";
 	}
 }
+
