@@ -30,14 +30,14 @@ int main()
     std::vector<float> fpsVector{};
     if (Config::showFps) fpsVector.reserve(1000);
 
-    bool spawnObjects{ true };
+    bool spawnDisks{ Config::autoSpawnStart };
 
     sf::Time colorTime;
 
     while (window.isOpen())
     {
-        Event::processEvents(window, mainView, solver, spawnObjects);
-        //Event::moveView(window, mainView);
+        Event::processEvents(window, mainView, solver, spawnDisks);
+        if (Config::canScreenMove) Event::moveView(window, mainView);
 
         sf::Time elapsed = clock.restart();
         colorTime += elapsed;
@@ -56,13 +56,13 @@ int main()
 
         }
 
-        if (spawnObjects)
+        if (spawnDisks)
         {
-            if (solver.getObjects().size() >= solver.getMaxObjects() - Config::spawnRate) spawnObjects = false;
+            if (solver.getDisks().size() >= solver.getMaxDisks() - Config::spawnRate) spawnDisks = false;
 
             for (int i{}; i < Config::spawnRate; i++)
             {
-                solver.addObject(Config::diskRadius,
+                solver.addDisk(Config::diskRadius,
                     { 100 + 3 * i * Config::diskRadius, 100 + 3 * i * Config::diskRadius },
                     { 97 + 3 * i * Config::diskRadius, 100 + 3 * i * Config::diskRadius },
                     Utility::getGradient(colorTime.asSeconds(), Config::diskColor.first, Config::diskColor.second));

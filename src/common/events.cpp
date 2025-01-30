@@ -6,7 +6,7 @@
 
 bool g_mouseLeftDown{ false };
 
-void Event::processEvents(sf::RenderWindow& window, sf::View& view, Solver& solver, bool& spawnObjects)
+void Event::processEvents(sf::RenderWindow& window, sf::View& view, Solver& solver, bool& spawnDisks)
 {
 	while (const std::optional event = window.pollEvent())
 	{
@@ -32,7 +32,7 @@ void Event::processEvents(sf::RenderWindow& window, sf::View& view, Solver& solv
 		{
 			if (keyReleased->scancode == sf::Keyboard::Scancode::Space)
 			{
-				spawnObjects = !spawnObjects;
+				spawnDisks = !spawnDisks;
 			}
 			if (keyReleased->scancode == sf::Keyboard::Scancode::S)
 			{
@@ -43,7 +43,16 @@ void Event::processEvents(sf::RenderWindow& window, sf::View& view, Solver& solv
 		{
 			if (mouseButtonPressed->button == sf::Mouse::Button::Left)
 			{
+				if (!g_mouseLeftDown) 
+					solver.addDisk(Config::diskRadius,
+					window.mapPixelToCoords(mouseButtonPressed->position),
+					window.mapPixelToCoords(mouseButtonPressed->position),
+					{ static_cast<uint8_t>(Random::get(0, 255)),
+					  static_cast<uint8_t>(Random::get(0, 255)),
+					  static_cast<uint8_t>(Random::get(0, 255)) },
+					true);
 				g_mouseLeftDown = true;
+
 			}
 		}
 		else if (const auto* mouseButtonReleased = event->getIf<sf::Event::MouseButtonReleased>())
@@ -51,16 +60,18 @@ void Event::processEvents(sf::RenderWindow& window, sf::View& view, Solver& solv
 			if (mouseButtonReleased->button == sf::Mouse::Button::Left)
 			{
 				g_mouseLeftDown = false;
-				solver.addObject(Config::diskRadius,
-								 window.mapPixelToCoords(mouseButtonReleased->position),
-								 window.mapPixelToCoords(mouseButtonReleased->position),
-								 { static_cast<uint8_t>(Random::get(0, 255)),
-								   static_cast<uint8_t>(Random::get(0, 255)),
-								   static_cast<uint8_t>(Random::get(0, 255)) });
 			}
 		}
 		else if (const auto* mouseMoved = event->getIf<sf::Event::MouseMoved>())
 		{
+			if (g_mouseLeftDown)
+				solver.addDisk(Config::diskRadius,
+					window.mapPixelToCoords(mouseMoved->position),
+					window.mapPixelToCoords(mouseMoved->position),
+					{ static_cast<uint8_t>(Random::get(0, 255)),
+					  static_cast<uint8_t>(Random::get(0, 255)),
+					  static_cast<uint8_t>(Random::get(0, 255)) },
+					true);
 
 		}
 		else if (const auto* mouseWheelScrolled = event->getIf<sf::Event::MouseWheelScrolled>())

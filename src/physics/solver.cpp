@@ -5,6 +5,8 @@
 
 Solver::Solver()
 {
+	m_disks.reserve(2 * m_grid.size());
+
 	std::stringstream os{};
 	os << "config" << Config::diskRadius << "_" << Config::spawnRate << ".txt";
 
@@ -39,17 +41,26 @@ void Solver::update(const float dt)
 	for (int i{}; i < nbSubStep; i++)
 	{
 		updateGrid();
+		solveLinks();
 		solveCollision();
 		updatePos(subDt);
 		m_grid.clear();
 	}
 }
 
+void Solver::solveLinks()
+{
+	for (int i{}; i < m_links.size(); i++)
+	{
+		m_links[i].apply();
+	}
+}
+
 void Solver::updateGrid()
 {
-	for (int i {}; i < m_objects.size(); i++)
+	for (int i {}; i < m_disks.size(); i++)
 	{
-		m_grid.addObject(m_objects[i], i);
+		m_grid.addDisk(m_disks[i], i);
 	}
 }
 
@@ -59,103 +70,130 @@ void Solver::solveCollision()
 	for (int k{}; k < m_grid.size(); k++)
 	{
 		const auto& currentCell{ m_grid[k] };
-		for (int j{}; j < currentCell.objCount; j++)
+		for (int j{}; j < currentCell.diskCount; j++)
 		{
-			const int i{ currentCell.objects[j] };
-			if (m_grid.idexIsValid(k + nbCol)) solveObjCellCollision(i, m_grid[k + nbCol]);
-			if (m_grid.idexIsValid(k + nbCol - 1)) solveObjCellCollision(i, m_grid[k + nbCol - 1]);
-			if (m_grid.idexIsValid(k + nbCol + 1)) solveObjCellCollision(i, m_grid[k + nbCol + 1]);
-			if (m_grid.idexIsValid(k)) solveObjCellCollision(i, m_grid[k]);
-			if (m_grid.idexIsValid(k - 1)) solveObjCellCollision(i, m_grid[k - 1]);
-			if (m_grid.idexIsValid(k + 1)) solveObjCellCollision(i, m_grid[k + 1]);
-			if (m_grid.idexIsValid(k - nbCol)) solveObjCellCollision(i, m_grid[k - nbCol]);
-			if (m_grid.idexIsValid(k - nbCol - 1)) solveObjCellCollision(i, m_grid[k - nbCol - 1]);
-			if (m_grid.idexIsValid(k - nbCol + 1)) solveObjCellCollision(i, m_grid[k - nbCol + 1]);
+			const int i{ currentCell.disks[j] };
+			if (m_grid.idexIsValid(k + nbCol)) solveDiskCellCollision(i, m_grid[k + nbCol]);
+			if (m_grid.idexIsValid(k + nbCol - 1)) solveDiskCellCollision(i, m_grid[k + nbCol - 1]);
+			if (m_grid.idexIsValid(k + nbCol + 1)) solveDiskCellCollision(i, m_grid[k + nbCol + 1]);
+			if (m_grid.idexIsValid(k)) solveDiskCellCollision(i, m_grid[k]);
+			if (m_grid.idexIsValid(k - 1)) solveDiskCellCollision(i, m_grid[k - 1]);
+			if (m_grid.idexIsValid(k + 1)) solveDiskCellCollision(i, m_grid[k + 1]);
+			if (m_grid.idexIsValid(k - nbCol)) solveDiskCellCollision(i, m_grid[k - nbCol]);
+			if (m_grid.idexIsValid(k - nbCol - 1)) solveDiskCellCollision(i, m_grid[k - nbCol - 1]);
+			if (m_grid.idexIsValid(k - nbCol + 1)) solveDiskCellCollision(i, m_grid[k - nbCol + 1]);
 		}
 	}
 }
 
-void Solver::solveObjCollision(const int id1, const int id2)
+void Solver::solveDiskCollision(const int id1, const int id2)
 {
-	auto& obj1{ m_objects[id1] };
-	auto& obj2{ m_objects[id2] };
+	auto& disk1{ m_disks[id1] };
+	auto& disk2{ m_disks[id2] };
 
-	sf::Vector2f n{ obj2.pos - obj1.pos };
+	sf::Vector2f n{ disk2.pos - disk1.pos };
 
-	const float delta = n.length() - obj1.radius - obj2.radius;
+	const float delta = n.length() - disk1.radius - disk2.radius;
 
 	if (delta > 0) return;
 
 	//if (n.length() < 1e-6) n = sf::Vector2f{ 1.f, 1.f };
 	if (n.length() < 1e-6) return;
 
-	obj1.pos += 0.5f * delta * n.normalized();
-	obj2.pos -= 0.5f * delta * n.normalized();
+	float disk1Displacement{ 0.5f};
+
+	if (disk1.fixed)
+	{
+		disk1Displacement = 0.f;
+	}
+	else if (disk2.fixed)
+	{
+		disk1Displacement = 1.f;
+	}
+
+	const float disk2Displacement{ 1.f - disk1Displacement };
+
+	disk1.pos += disk1Displacement * delta * n.normalized();
+	disk2.pos -= disk2Displacement * delta * n.normalized();
 }
 
-void Solver::solveObjCellCollision(const int id, const Cell& cell)
+void Solver::solveDiskCellCollision(const int id, const Cell& cell)
 {
-	for (int i{}; i < cell.objCount; i++)
+	for (int i{}; i < cell.diskCount; i++)
 	{
-		const int idBis{ cell.objects[i]};
-		if (idBis != id) solveObjCollision(id, idBis);
+		const int idBis{ cell.disks[i]};
+		if (idBis != id) solveDiskCollision(id, idBis);
 	}
 }
 
 void Solver::updatePos(const float dt)
 {
-	for (auto& obj : m_objects)
+	for (auto& disk : m_disks)
 	{
-		sf::Vector2f newOldPos{ obj.pos };
+		if (disk.fixed) continue;
+
+		sf::Vector2f newOldPos{ disk.pos };
 
 		const float VELOCITY_DAMPING = 40.0f;
 
-		obj.pos += obj.pos - obj.oldPos + (Config::gravity - (obj.pos - obj.oldPos) * VELOCITY_DAMPING) * dt * dt;
-		obj.oldPos = newOldPos;
+		disk.pos += disk.pos - disk.oldPos + (Config::gravity - (disk.pos - disk.oldPos) * VELOCITY_DAMPING) * dt * dt;
+		disk.oldPos = newOldPos;
 
-		applyConstraints(obj);
+		applyConstraints(disk);
 	}
 }
 
-void Solver::applyConstraints(RigidDisk& obj)
+void Solver::applyConstraints(RigidDisk& disk)
 {
 	const float safety{ 2.f };
 
-	if (obj.pos.y + obj.radius + safety >= (m_grid.getNbRow() - 2 * m_grid.getPadding()) * m_grid.getCellSize())
+	if (disk.pos.y + disk.radius + safety >= (m_grid.getNbRow() - 2 * m_grid.getPadding()) * m_grid.getCellSize())
 	{
-		obj.pos.y = (m_grid.getNbRow() - 2 * m_grid.getPadding()) * m_grid.getCellSize() - obj.radius - safety;
+		disk.pos.y = (m_grid.getNbRow() - 2 * m_grid.getPadding()) * m_grid.getCellSize() - disk.radius - safety;
 	}
-	else if (obj.pos.y - obj.radius - safety <= 0)
+	else if (disk.pos.y - disk.radius - safety <= 0)
 	{
-		obj.pos.y = obj.radius + safety;
-	}
-
-	if (obj.pos.x + obj.radius + safety >= (m_grid.getNbCol() - 2 * m_grid.getPadding()) * m_grid.getCellSize())
-	{
-		obj.pos.x = (m_grid.getNbCol() - 2 * m_grid.getPadding()) * m_grid.getCellSize() - obj.radius - safety;
+		disk.pos.y = disk.radius + safety;
 	}
 
-	else if (obj.pos.x - obj.radius - safety <= 0)
+	if (disk.pos.x + disk.radius + safety >= (m_grid.getNbCol() - 2 * m_grid.getPadding()) * m_grid.getCellSize())
 	{
-		obj.pos.x = obj.radius + safety;
+		disk.pos.x = (m_grid.getNbCol() - 2 * m_grid.getPadding()) * m_grid.getCellSize() - disk.radius - safety;
+	}
+
+	else if (disk.pos.x - disk.radius - safety <= 0)
+	{
+		disk.pos.x = disk.radius + safety;
 	}
 }
 
 
-void Solver::addObject(float radius, const sf::Vector2f& pos, const sf::Vector2f& oldPos, const sf::Color& color)
+void Solver::addDisk(float radius, const sf::Vector2f& pos, const sf::Vector2f& oldPos, const sf::Color& color, const bool fixed)
 {
-	const int objId{ static_cast<int>(m_objects.size()) };
+	sf::Vector2f newPos{ pos };
 
-	if (m_finalPos.size() > 0 && objId < m_finalPos.size())
+	if (fixed)
 	{
-		m_objects.push_back({ radius, pos, oldPos, m_colors[m_finalPos[objId]] });
+		const int cellId{ m_grid.posToIndex(pos) };
+		if (m_occupied.count(cellId)) return;
+
+		m_occupied.insert(cellId);
+
+		newPos = m_grid.getCellMiddlePos(cellId);
+	}
+
+	const int diskId{ static_cast<int>(m_disks.size()) };
+
+	if (m_finalPos.size() > 0 && diskId < m_finalPos.size())
+	{
+		m_disks.push_back({ radius, newPos, oldPos, m_colors[m_finalPos[diskId]], fixed });
 	}
 	else
 	{
-		m_objects.push_back({ radius, pos, oldPos, color });
+		m_disks.push_back({ radius, newPos, oldPos, color, fixed });
 	}
 
-	if (objId % 1000 == 0) std::cout << "Number of objects : " << m_objects.size() << "\n";
+	if (diskId % 1000 == 0) std::cout << "Number of disks : " << m_disks.size() << "\n";
 }
 
 void Solver::record() const
@@ -172,8 +210,8 @@ void Solver::record() const
 
 	std::ofstream OFile{ filename };
 
-	for (int i{}; i < m_objects.size(); i++)
+	for (int i{}; i < m_disks.size(); i++)
 	{
-		OFile << m_grid.posToIndex(m_objects[i].pos) << "\n";
+		OFile << m_grid.posToIndex(m_disks[i].pos) << "\n";
 	}
 }

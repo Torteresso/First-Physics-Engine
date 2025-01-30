@@ -15,21 +15,21 @@ struct Cell
 
 	int id{};
 
-	int objCount{ 0 };
-	std::array<int, capacity> objects {};
+	int diskCount{ 0 };
+	std::array<int, capacity> disks {};
 
 	Cell() = default;
 
-	void addObject(const int index)
+	void addDisk(const int index)
 	{
-		objects[objCount] = index;
-		if (objCount > 3) std::cout << id << ", " << objCount << "wow\n";
-		objCount += objCount < maxIndex;
+		disks[diskCount] = index;
+		if (diskCount > 3) std::cout << id << ", " << diskCount << "wow\n";
+		diskCount += diskCount < maxIndex;
 	}
 
 	void clear()
 	{
-		objCount = 0;
+		diskCount = 0;
 	}
 };
 
@@ -53,9 +53,9 @@ public:
 		}
 	}
 
-	void addObject(RigidDisk& obj, const int id)
+	void addDisk(RigidDisk& disk, const int id)
 	{
-		m_disks[posToIndex(obj.pos)].addObject(id);
+		m_disks[posToIndex(disk.pos)].addDisk(id);
 	}
 
 	void clear()
@@ -82,6 +82,14 @@ public:
 	const int getNbRow() const{ return m_nbRow; }
 	const int getCellSize() const { return m_cellSize; }
 	const int getPadding() const { return m_padding; }
+
+	const sf::Vector2f getCellMiddlePos(const int index)
+	{
+		float x{ (index % m_nbCol - 0.5f) * m_cellSize };
+		float y{ (index / m_nbCol - 0.5f) * m_cellSize };
+
+		return { x, y };
+	}
 
 	static const int coordToIndex(const int x, const int y)
 	{

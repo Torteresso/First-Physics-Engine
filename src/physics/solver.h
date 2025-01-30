@@ -9,6 +9,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <set>
 
 
 class Solver
@@ -19,12 +20,12 @@ public:
 
 	void update(const float dt);
 
-	void addObject(float radius, const sf::Vector2f& pos, const sf::Vector2f& olfPos, const sf::Color& color);
+	void addDisk(float radius, const sf::Vector2f& pos, const sf::Vector2f& olfPos, const sf::Color& color, const bool fixed=false);
 
-	const std::vector<RigidDisk>& getObjects() const { return m_objects; }
+	const std::vector<RigidDisk>& getDisks() const { return m_disks; }
 	const Grid& getGrid() const { return m_grid; }
 	
-	const int getMaxObjects() const { return (Config::windowSizef.x * Config::windowSizef.y * 0.9f)/(3.14f*Config::diskRadius * Config::diskRadius); }
+	const int getMaxDisks() const { return (Config::windowSizef.x * Config::windowSizef.y * 0.9f)/(3.14f*Config::diskRadius * Config::diskRadius); }
 
 	void record() const;
 
@@ -33,15 +34,20 @@ private:
 	void applyConstraints(RigidDisk& obj);
 	
 	void solveCollision();
-	void solveObjCellCollision(const int id, const Cell& cell2);
-	void solveObjCollision(const int id1, const int id2);
+	void solveLinks();
+	void solveDiskCellCollision(const int id, const Cell& cell2);
+	void solveDiskCollision(const int id1, const int id2);
 
 	void updateGrid();
 
-	std::vector<RigidDisk> m_objects;
+	std::vector<RigidDisk> m_disks;
+
+	std::vector<Link> m_links;
 
 	std::vector<int> m_finalPos;
 	std::vector<sf::Color> m_colors;
+
+	std::set<int> m_occupied;
 
 	Grid m_grid{};
 };

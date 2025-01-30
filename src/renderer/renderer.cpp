@@ -9,17 +9,17 @@ void Renderer::render(sf::RenderTarget& target)
 
 void Renderer::updateVertices()
 {
-	const auto& objects{ m_solver.getObjects() };
+	const auto& disks{ m_solver.getDisks() };
 
 	const sf::Vector2f& textureSize{ static_cast<sf::Vector2f>(m_texture.getSize()) };
 
-	m_vertices.resize(objects.size() * 6);
-	for (int i{}; i < objects.size(); i++)
+	m_vertices.resize(disks.size() * 6);
+	for (int i{}; i < disks.size(); i++)
 	{
-		const auto& obj{ objects[i] };
-		const auto& pos{ obj.pos };
-		const auto& color{ obj.color };
-		const float radius{ obj.radius };
+		const auto& disk{ disks[i] };
+		const auto& pos{ disk.pos };
+		const auto& color{ disk.color };
+		const float radius{ disk.radius };
 
 		m_vertices[6 * i + 0].position = pos + sf::Vector2(-radius, -radius);
 		m_vertices[6 * i + 1].position = pos + sf::Vector2(radius, -radius);
