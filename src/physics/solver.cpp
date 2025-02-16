@@ -37,11 +37,19 @@ Solver::Solver()
 void Solver::addInitialConfig()
 {
 	const int holeSize{ 0 };
-	for (int col{ m_grid.getPadding() + holeSize}; col < m_grid.getNbCol() - m_grid.getPadding(); col += 2)
+	const int nbLines{ 1 };
+	const int spaceBetweenLines{ 3 };
+	int alternating{ 0 };
+	const int spacing{ 0 };
+	for (int l{}; l < nbLines * spaceBetweenLines; l += spaceBetweenLines)
 	{
-		const int cellId{ (m_grid.getNbRow() - 2 * m_grid.getPadding()) * m_grid.getNbCol() + col };
-		const sf::Vector2f pos{ m_grid.getCellMiddlePos(cellId) };
-		addDisk(Config::diskRadius, pos, pos, sf::Color::White, true);
+		alternating += spacing / 2;
+		for (int col{ m_grid.getPadding() + holeSize }; col < m_grid.getNbCol() - m_grid.getPadding(); col += spacing)
+		{
+			const int cellId{ (m_grid.getNbRow() - l - 2 * m_grid.getPadding()) * m_grid.getNbCol() + col + alternating % 2 };
+			const sf::Vector2f pos{ m_grid.getCellMiddlePos(cellId) };
+			addDisk(Config::diskRadius, pos, pos, sf::Color::White, true);
+		}
 	}
 }
 
