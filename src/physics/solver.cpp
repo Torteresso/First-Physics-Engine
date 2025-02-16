@@ -36,11 +36,11 @@ Solver::Solver()
 
 void Solver::addInitialConfig()
 {
-	const int holeSize{ 0 };
+	const int holeSize{ 2 };
 	const int nbLines{ 1 };
 	const int spaceBetweenLines{ 3 };
 	int alternating{ 0 };
-	const int spacing{ 0 };
+	const int spacing{ 1 };
 	for (int l{}; l < nbLines * spaceBetweenLines; l += spaceBetweenLines)
 	{
 		alternating += spacing / 2;
