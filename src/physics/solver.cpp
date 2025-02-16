@@ -5,7 +5,8 @@
 
 Solver::Solver()
 {
-	m_disks.reserve(2 * m_grid.size());
+	m_pool = ObjectPool(2 * m_grid.size());
+	addInitialConfig();
 
 	std::stringstream os{};
 	os << "config" << Config::diskRadius << "_" << Config::spawnRate << ".txt";
@@ -30,9 +31,19 @@ Solver::Solver()
 		m_finalPos.push_back(cellId);
 	}
 
-	m_colors = ImageToGrid::transform(Config::imageFilename, m_grid);
+	m_colors = ImageToGrid::ColorTransform(Config::imageFilename, m_grid);
 }
 
+void Solver::addInitialConfig()
+{
+	const int holeSize{ 0 };
+	for (int col{ m_grid.getPadding() + holeSize}; col < m_grid.getNbCol() - m_grid.getPadding(); col += 2)
+	{
+		const int cellId{ (m_grid.getNbRow() - 2 * m_grid.getPadding()) * m_grid.getNbCol() + col };
+		const sf::Vector2f pos{ m_grid.getCellMiddlePos(cellId) };
+		addDisk(Config::diskRadius, pos, pos, sf::Color::White, true);
+	}
+}
 
 void Solver::update(const float dt)
 {
@@ -45,6 +56,31 @@ void Solver::update(const float dt)
 		solveCollision();
 		updatePos(subDt);
 		m_grid.clear();
+		clean();
+	}
+}
+
+void Solver::clean()
+{
+	for (int i{}; i < m_disks.size(); i++)
+	{
+		if (!m_disks[i]->isDead) continue;
+
+		for (auto& diskObj : m_diskObjects)
+		{
+			if (!diskObj.contains(*m_disks[i])) continue;
+
+
+			diskObj.clean();
+			break;
+		}
+
+		m_pool.Free(m_disks[i]);
+
+		auto it = m_disks.begin();
+        std::advance(it, i);
+        m_disks.erase(it);
+
 	}
 }
 
@@ -60,7 +96,7 @@ void Solver::updateGrid()
 {
 	for (int i {}; i < m_disks.size(); i++)
 	{
-		m_grid.addDisk(m_disks[i], i);
+		m_grid.addDisk(*m_disks[i], i);
 	}
 }
 
@@ -88,11 +124,10 @@ void Solver::solveCollision()
 
 void Solver::solveDiskCollision(const int id1, const int id2)
 {
-	auto& disk1{ m_disks[id1] };
-	auto& disk2{ m_disks[id2] };
+	auto& disk1{ *m_disks[id1] };
+	auto& disk2{ *m_disks[id2] };
 
 	if (disk1.isVirtual || disk2.isVirtual) return;
-	if (disk1.diskObjId >= 0 && disk1.diskObjId == disk2.diskObjId) return;
 
 	sf::Vector2f n{ disk2.pos - disk1.pos };
 
@@ -131,8 +166,10 @@ void Solver::solveDiskCellCollision(const int id, const Cell& cell)
 
 void Solver::updatePos(const float dt)
 {
-	for (auto& disk : m_disks)
+	for (auto& diskPtr : m_disks)
 	{
+		auto& disk{ *diskPtr };
+
 		if (disk.fixed) continue;
 
 		sf::Vector2f newOldPos{ disk.pos };
@@ -146,13 +183,27 @@ void Solver::updatePos(const float dt)
 	}
 }
 
+
+void Solver::removeObjectsFromDisk(const RigidDisk& disk)
+{
+	for (int i {}; i < m_diskObjects.size(); i++)
+	{
+		if (m_diskObjects[i].contains(disk))
+		{
+			m_diskObjects[i].explode();
+			m_diskObjects.erase(m_diskObjects.begin() + i);
+			return;
+		}
+	}
+}
+
 void Solver::applyConstraints(RigidDisk& disk)
 {
 	const float safety{ 2.f };
 
-	if (disk.pos.y + disk.radius + safety >= (m_grid.getNbRow() - 2 * m_grid.getPadding()) * m_grid.getCellSize())
+	if (disk.pos.y - 4 * disk.radius + safety >= (m_grid.getNbRow() - 2 * m_grid.getPadding()) * m_grid.getCellSize())
 	{
-		disk.pos.y = (m_grid.getNbRow() - 2 * m_grid.getPadding()) * m_grid.getCellSize() - disk.radius - safety;
+		disk.isDead = true;
 	}
 	else if (disk.pos.y - disk.radius - safety <= 0)
 	{
@@ -180,7 +231,10 @@ void Solver::addDisk(float radius, const sf::Vector2f& pos, const sf::Vector2f& 
 	if (fixed)
 	{
 		const int cellId{ m_grid.posToIndex(pos) };
-		if (m_occupied.count(cellId)) return;
+		if (m_occupied.count(cellId))
+		{
+			return;
+		}
 
 		m_occupied.insert(cellId);
 
@@ -190,21 +244,22 @@ void Solver::addDisk(float radius, const sf::Vector2f& pos, const sf::Vector2f& 
 
 	const int diskId{ static_cast<int>(m_disks.size()) };
 
-	if (m_finalPos.size() > 0 && diskId < m_finalPos.size())
+		
+	RigidDisk* disk = m_pool.Alloc();
+
+	disk->radius = radius;
+	disk->pos = newPos;
+	disk->oldPos = newOldPos;
+	disk->color = color;
+	disk->fixed = fixed;
+	disk->isVirtual = isVirtual;
+
+	if (m_finalPos.size() > 0 && diskId < m_finalPos.size() && !fixed)
 	{
-		if (fixed)
-		{
-			m_disks.push_back({ radius, newPos, newOldPos, color, fixed, isVirtual });
-		}
-		else
-		{
-			m_disks.push_back({ radius, newPos, newOldPos, m_colors[m_finalPos[diskId]], fixed, isVirtual });
-		}
+			disk->color = m_colors[m_finalPos[diskId]];
 	}
-	else
-	{
-		m_disks.push_back({ radius, newPos,newOldPos, color, fixed, isVirtual });
-	}
+
+	m_disks.emplace_back(disk);
 
 	if (diskId % 1000 == 0) std::cout << "Number of disks : " << m_disks.size() << "\n";
 }
@@ -217,43 +272,33 @@ void Solver::addDiskForObject(float radius, const sf::Vector2f& pos, const sf::V
 
 	if (m_disks.size() == diskId) return;  //No new DISK has been added
 
-	m_objDiskIds.insert(diskId);
+	m_objDiskComponents.push_back(m_disks.back());
 }
 
 void Solver::addObject()
 {
-	std::vector<RigidDisk*> components;
-	components.reserve(m_objDiskIds.size());
-
-	int objId{ static_cast<int>(m_diskObjects.size()) };
-
-	for (const auto& id : m_objDiskIds)
+	for (auto& disk : m_objDiskComponents)
 	{
-		auto& disk{ m_disks[id] };
-
-		components.push_back(&disk);
-
-		const int cellId{ m_grid.posToIndex(disk.pos)};
+		const int cellId{ m_grid.posToIndex(disk->pos)};
 		m_occupied.erase(cellId);
 
-		disk.isVirtual = false;
-		disk.fixed = false;
-		disk.diskObjId = objId;
+		disk->isVirtual = false;
+		disk->fixed = false;
 	}
 
-	m_diskObjects.push_back(DiskObject(components));
+	m_diskObjects.push_back(DiskObject(m_objDiskComponents));
 
-	m_objDiskIds.clear();
-
+	m_objDiskComponents.clear();
 }
 
 void Solver::clear()
 {
 	m_grid.clear();
 	m_disks.clear();
-	m_objDiskIds.clear();
+	m_objDiskComponents.clear();
 	m_diskObjects.clear();
 	m_occupied.clear();
+	addInitialConfig();
 }
 
 void Solver::record() const
@@ -272,7 +317,33 @@ void Solver::record() const
 
 	for (int i{}; i < m_disks.size(); i++)
 	{
-		OFile << m_grid.posToIndex(m_disks[i].pos) << "\n";
+		OFile << m_grid.posToIndex(m_disks[i]->pos) << "\n";
 	}
 }
 
+void Solver::updateDebug()
+{
+
+	if (m_disks.size() < 1) return;
+
+	if (m_diskViewed >= static_cast<int>(m_disks.size()))
+	{
+		m_diskViewed = 0;
+	}
+	else if (m_diskViewed < 0)
+	{
+		m_diskViewed = m_disks.size() - 1;
+	}
+}
+
+void Solver::viewNext()
+{
+	++m_diskViewed;
+	updateDebug();
+}
+
+void Solver::viewPrevious()
+{
+	--m_diskViewed;
+	updateDebug();
+}

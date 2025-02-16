@@ -55,6 +55,7 @@ public:
 
 	void addDisk(RigidDisk& disk, const int id)
 	{
+		if (disk.pos.y - Config::diskRadius >= Config::windowSize.y) return;
 		m_disks[posToIndex(disk.pos)].addDisk(id);
 	}
 

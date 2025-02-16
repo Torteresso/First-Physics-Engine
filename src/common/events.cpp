@@ -1,5 +1,6 @@
 #include "common/events.h"
 #include "common/random.h"
+#include "common/imageToGrid.h"
 
 #include <iostream>
 #include <cmath>
@@ -42,6 +43,22 @@ void Event::processEvents(sf::RenderWindow& window, sf::View& view, Solver& solv
 			{
 				solver.clear();
 			}
+			if (keyReleased->scancode == sf::Keyboard::Scancode::L)
+			{
+				const float ratio{ 1.f };
+				ImageToGrid::ObjectTransform("res/A.png", solver,
+					{ static_cast<float>(Random::get(1, Config::windowSize.x - 201 * ratio))
+					 ,static_cast<float>(Random::get(1, Config::windowSize.y - 201 * ratio)) }, ratio);
+			}
+			if (keyReleased->scancode == sf::Keyboard::Scancode::Right)
+			{
+				if (Config::debug) solver.viewNext();
+			}
+			if (keyReleased->scancode == sf::Keyboard::Scancode::Left)
+			{
+				if (Config::debug) solver.viewPrevious();
+			}
+
 
 		}
 		else if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>())
