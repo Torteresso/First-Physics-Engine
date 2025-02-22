@@ -303,6 +303,7 @@ void Solver::clear()
 {
 	m_grid.clear();
 	m_disks.clear();
+	m_pool.clear();
 	m_objDiskComponents.clear();
 	m_diskObjects.clear();
 	m_occupied.clear();
@@ -327,6 +328,8 @@ void Solver::record() const
 	{
 		OFile << m_grid.posToIndex(m_disks[i]->pos) << "\n";
 	}
+
+	std::cout << "CONFIGURATION SAVED SUCCESSFULLY\n";
 }
 
 void Solver::updateDebug()

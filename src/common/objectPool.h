@@ -22,14 +22,9 @@ struct ObjectPool {
 
     ObjectPool() = default;
 
-    ObjectPool(size_t capacity) {
-        slots.resize(capacity, FreeSlot{});
-        for (size_t i = 0; i != capacity; ++i) {
-            std::get<FreeSlot>(slots[i]).next = i + 1;
-        }
-
-        std::get<FreeSlot>(slots.back()).next = kInvalidSlotId;
-        first_free = 0;
+    ObjectPool(size_t capacity) : m_capacity{ capacity }
+    {
+        clear();
     }
 
     void Free(RigidDisk* object) {
@@ -56,8 +51,24 @@ struct ObjectPool {
         return &std::get<RigidDisk>(slots[id]);
     }
 
+    void clear()
+    {
+        slots.clear();
+        slots.resize(m_capacity, FreeSlot{});
+
+        for (size_t i = 0; i != m_capacity; ++i) 
+        {
+            std::get<FreeSlot>(slots[i]).next = i + 1;
+        }
+
+        std::get<FreeSlot>(slots.back()).next = kInvalidSlotId;
+        first_free = 0;
+
+    }
+
     std::vector<Slot> slots;
     size_t first_free = kInvalidSlotId;
-};
+    size_t m_capacity;
+ };
 
 #endif
